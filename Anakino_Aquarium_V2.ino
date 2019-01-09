@@ -135,15 +135,15 @@ int pwm_vent;  // variable que llevará el valor del pwm de 0 a 255
 ////////////////////////////////////////////////////////////////////////
 
                                 // Do not change this line
-  char ssid[] = "atorcha";
-  char pass[] = "X55-mCx-DVL-kF4";
+  char ssid[] = "....";
+  char pass[] = ".....";
 
 
 ////////////////////////////////////////////////////////////////////////
 //DECLARACION DE VARIABLES de THINGSPEAK
 ////////////////////////////////////////////////////////////////////////
- unsigned long myChannelNumber = 358672;
- const char * myWriteAPIKey = "K6GT1NEIV57XGXIL";
+ unsigned long myChannelNumber = ....;
+ const char * myWriteAPIKey = "......";
  long previous_Millis_datos = 0;
 
 ////////////////////////////////////////////////////////////////////////
@@ -239,7 +239,7 @@ int temp_ai;    // Variable para indicar si activa o no el aireador desde blynk 
 /////////////////////////////////////////////////////////////////
 //Blynk
 ////////////////////////////////////////////////////////////////
-char auth[] = "86031b9fe3584a26b84640052eced136";
+char auth[] = ".......";
 
 BlynkTimer timer;
 

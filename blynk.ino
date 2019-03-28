@@ -7,6 +7,7 @@ void blynk(){
   Blynk.virtualWrite(V22, tempD); // envia la temp al widget 
   Blynk.virtualWrite(V24, humedad);
   Blynk.virtualWrite(V25, tempdht);
+  Serial.println("Envia datos a blynk." + String(hour()) + ":" + String(minute()) + ":" + String(second()));
 }
 
 

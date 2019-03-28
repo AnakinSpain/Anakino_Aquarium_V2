@@ -2,34 +2,29 @@
 // VOID SETUP
 ///////////////////////////////////////////////////////////////
 void setup() {
+  
   // Debug console
   Serial.begin(9600);
-  delay(10);
-
+  delay(10); 
+  
   // Set ESP8266 baud rate;
   EspSerial.begin(ESP8266_BAUD);
   delay(10);
-/*  
+  
   // Connect to Wi-Fi network with SSID and password
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-  WiFi.begin(ssid, pass);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
- */ 
    Blynk.begin(auth, wifi, ssid, pass);
+   Blynk.notify("Conectado!");
   // You can also specify server:
   //Blynk.begin(auth, ssid, pass, "blynk-cloud.com", 8442);
   //Blynk.begin(auth, ssid, pass, IPAddress(192,168,1,100), 8442);
+ 
+    
+  timer.setInterval(120000L, SendToThingspeak);  // envia dato cada 2 minuto a thingspeak
+  timer.setInterval(30000L, blynk); //timer will run every 30 sec a blynk
+  timer.setInterval(35000L, check_1); //timer will run every 35 sec
+  timer.setInterval(5000L, check_2); //timer will run every 5 sec 
 
 
-  Serial.println("WiFi connected ");
-  Serial.print("IP address: ");
-  Blynk.tweet("My Arduino project is tweeting using @blynk_app and it’s awesome!\n #arduino #IoT #blynk");
-  
- // ThingSpeak.begin(client);
   
 //Asignamos los distintos PIN
 
@@ -51,7 +46,7 @@ void setup() {
   
   servo1.attach(servoPin);
 
-  
+
 ////////////////////////////////////////
 ////////Con esto apagamos todos los reles. 
 /////////////////////////////////////////
@@ -81,6 +76,7 @@ void setup() {
   //////////////////////////////
   
   Serial.println("Test the serial monitor!");    //Test the serial monitor
+
 }
 
 /////////////////////////////////////////////////

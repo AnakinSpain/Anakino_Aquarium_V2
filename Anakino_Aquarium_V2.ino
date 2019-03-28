@@ -1,5 +1,7 @@
 
 
+
+
 ///////////////////////////////////////////////////////////////
 //
 //
@@ -8,30 +10,12 @@
 //     CONTROLADOR DE ACUARIO CON LA APP BLYNK 
 //     
 //     V1.0 
-//     PLACA RobotDyn Mega + wifi
+//     PLACA Arduino Mega + wifi ESP8266
 //     
 //     TO DO: 1) Añadir opcion de luces auto, man on o man off y controladas por el arduino
 //            2) Añadir comedero
 //            3) Añadir los pines para los reles. segun ya tengo conectado
 //            4) Añadir led verde o rojo segun si está online o no
-///////////////////////////////////////////////////////////////
-// Para subir Código Switch:
-//  
-// 3- ON 
-// 4- ON
-// RXD0 x TXD0
-//
-///////////////////////////////////////////////////////////////
-// Para ejecutar código en la placa:
-// 
-// 1- ON
-// 2- ON 
-// 3- ON 
-// 4- ON
-// RXD3 x TXD3
-//
-///////////////////////////////////////////////////////////////
-//
 //
 ///////////////////////////////////////////////////////////////
 //Listado de PINs utilizados
@@ -92,7 +76,7 @@
 ///////////////////////////////////////////////////////////////
 //Librerias necesarias
 ///////////////////////////////////////////////////////////////
-
+#define BLYNK_PRINT Serial
 
 #include <ESP8266_Lib.h>
 #include <BlynkSimpleShieldEsp8266.h>
@@ -101,22 +85,28 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <Servo.h>
-#include "ThingSpeak.h"
+#include <TimeLib.h>
 #include <WidgetRTC.h>
 #include <DHT.h>
+#include "U8glib.h"
 
+////////////////////////////////////////////////////////////////////////
+//CONFIGURACION WIFI
+////////////////////////////////////////////////////////////////////////
 
+   char auth[] = "2865708354d44b64bb7b153659319b48";
+   
+  // Your WiFi credentials.
+  // Set password to "" for open networks.
+  char ssid[] = "atorcha";
+  char pass[] = "X55-mCx-DVL-kF4";
+  
+// Hardware Serial on Mega, Leonardo, Micro...poner Serial3 para la placa robotdyn
+#define EspSerial Serial1
 
-#define BLYNK_PRINT Serial
-
-// Hardware Serial on Mega, Leonardo, Micro...
-#define EspSerial Serial3
-
-// Your ESP8266 baud rate:
-#define ESP8266_BAUD 115200
+#define ESP8266_BAUD 115200 // Your ESP8266 baud rate:
 
 ESP8266 wifi(&EspSerial);
-
 
 ////////////////////////////////////////////////////////////////////////
 //VALORES QUE SE PUEDEN CAMBIAR AL GUSTO
@@ -124,28 +114,21 @@ ESP8266 wifi(&EspSerial);
 
 #define temperatura_margen  0.5    // Margen de actuacion del calentador
 
+
 ////////////////////////////////////////////////////////////////////////
 //VARIABLES DE PWM
 ////////////////////////////////////////////////////////////////////////
 
 int pwm_vent;  // variable que llevará el valor del pwm de 0 a 255
 
-////////////////////////////////////////////////////////////////////////
-//CONFIGURACION WIFI
-////////////////////////////////////////////////////////////////////////
-
-                                // Do not change this line
-  char ssid[] = "....";
-  char pass[] = ".....";
-
-
+/*
 ////////////////////////////////////////////////////////////////////////
 //DECLARACION DE VARIABLES de THINGSPEAK
 ////////////////////////////////////////////////////////////////////////
- unsigned long myChannelNumber = ....;
- const char * myWriteAPIKey = "......";
+ unsigned long myChannelNumber = 358672;
+ const char * myWriteAPIKey = "K6GT1NEIV57XGXIL";
  long previous_Millis_datos = 0;
-
+*/
 ////////////////////////////////////////////////////////////////////////
 //DECLARACION DE VARIABLES Y PINES
 ////////////////////////////////////////////////////////////////////////
@@ -162,6 +145,7 @@ int pwm_vent;  // variable que llevará el valor del pwm de 0 a 255
 #define luz         4    // PWM Luz blanca
 #define luz_azul    5    // PWM leds azules noche
 
+#define sensores_temp  22   // Sensores de temp de agua y pantalla
 #define nivel_acu  23   // Boya nivel agua acuario
 #define bomba      24   // Pin accionara la bomba de llenado 
 
@@ -235,11 +219,10 @@ int modo_ai;      // modo de funcionamiento aireador
 int temp_uv;    // Variable para indicar si activa o no la lamp uv desde blynk por el temporizador
 int temp_ai;    // Variable para indicar si activa o no el aireador desde blynk por el temporizador
 
-
+  
 /////////////////////////////////////////////////////////////////
 //Blynk
 ////////////////////////////////////////////////////////////////
-char auth[] = ".......";
 
 BlynkTimer timer;
 
@@ -305,7 +288,7 @@ bool isConnected;
   
 }
  
-
+ 
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 //Establecemos los PIN de los sensores de temperatura
@@ -313,7 +296,7 @@ bool isConnected;
 ////////////////////////////////////////////////////////////////
 
 
-OneWire OneWireBus(22);      //Sensores de temperatura conectados al pin 22.
+OneWire OneWireBus(sensores_temp);      //Sensores de temperatura conectados al pin 22.
 DallasTemperature sensors(&OneWireBus);
 DeviceAddress sensor_agua, sensor_habitacion, sensor_disipador;
 //DeviceAddress sensor_agua= {0x28, 0x10, 0x32, 0x2B, 0x04, 0x00, 0x00, 0x38 }; // Es necesario cambiar este valor acorde con nuestro sensor.
@@ -327,6 +310,20 @@ DeviceAddress sensor_agua, sensor_habitacion, sensor_disipador;
 ///////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 Servo servo1;
+
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+//  pantalla
+///////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+// Constructor especifico para el display utilizado
+// =================================================
+//U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_NONE); // I2C / TWI
+U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_DEV_0|U8G_I2C_OPT_FAST); // Dev 0, Fast I2C / TWI
+//U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_NO_ACK); // Display which does not send ACK
+
+
+int X_pos = 0; // posicion inicial scroll
 
 
 

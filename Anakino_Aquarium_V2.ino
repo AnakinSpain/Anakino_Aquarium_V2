@@ -106,12 +106,12 @@
 //CONFIGURACION WIFI
 ////////////////////////////////////////////////////////////////////////
 
-   char auth[] = "2865708354d44b64bb7b153659319b48";
+   char auth[] = "xxxxx";
    
   // Your WiFi credentials.
   // Set password to "" for open networks.
-  char ssid[] = "atorcha";
-  char pass[] = "X55-mCx-DVL-kF4";
+  char ssid[] = "xxxx";
+  char pass[] = "Xxxxx";
   
 // Hardware Serial on Mega, Leonardo, Micro...poner Serial3 para la placa robotdyn
 #define EspSerial Serial1

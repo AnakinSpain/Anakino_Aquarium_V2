@@ -1,5 +1,7 @@
 void check_ventilador(){
-  
+  #ifdef DEBUG
+  Serial.println("check ventilador");
+  #endif
   int pwm_vent;  // variable que llevará el valor del pwm de 0 a 255
   const int temp_min_vent = temp_agua_des + 1; // Serial.println("Temp min vent: "+String(temp_min_vent));
   const int temp_max_vent = temp_agua_des + 4; //Serial.println("Temp max vent: "+String(temp_max_vent));
@@ -22,4 +24,3 @@ void check_ventilador(){
     led2.off();
   }
 }
-

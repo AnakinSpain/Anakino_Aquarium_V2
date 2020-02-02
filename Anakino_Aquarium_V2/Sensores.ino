@@ -4,22 +4,26 @@
 // activar o desactivar calentador y ventiladores
 /////////////////////////////////////////////////////////////////
 void check_temp(){
-    
+  #ifdef DEBUG
+  Serial.println("check temp");
+  #endif  
   sensors.requestTemperatures();   // call sensors.requestTemperatures() to issue a global 
   // temperature request to all devices on the bus
 
  temp_agua_inst = (sensors.getTempC(sensor_agua));        // lee temp del agua
  temp_habit_inst = (sensors. getTempC(sensor_habitacion));// lee temp de la habitacion
- temp_disp_inst = (sensors.getTempC(sensor_disipador));   // lee temp del disipador
+ //temp_disp_inst = (sensors.getTempC(sensor_disipador));   // lee temp del disipador
 
- if (temp_agua_inst != -127 && temp_habit_inst != -127 && temp_disp_inst != -127) 
+ if (temp_agua_inst != -127 && temp_habit_inst != -127) 
 
  {
   contador_temp ++;                       // LEE LOS VALORES DE LAS TEMPERATURAS
   temperatura_agua_temp += temp_agua_inst;  
-  temperatura_habitacion_temp += temp_habit_inst;      
-  temperatura_disipador_temp += temp_disp_inst;   
+  temperatura_habitacion_temp += temp_habit_inst; 
+      
+  #ifdef DEBUG 
   Serial.println("temperatura instantánea= " + String(temp_agua_inst) + " Temp. acumulada= "+ String(temperatura_agua_temp));
+  #endif
  }
 
  
@@ -27,27 +31,25 @@ void check_temp(){
   {
     temp_agua = temperatura_agua_temp / 10; Serial.println("Temperatura media: "+ String(temp_agua));
     tempHB = temperatura_habitacion_temp / 10;
-    tempD = temperatura_disipador_temp / 10;     
    
     contador_temp = 0;  
     temperatura_agua_temp = 0;    
     temperatura_habitacion_temp = 0;
-    temperatura_disipador_temp = 0; 
     temp_agua_inst = 0;
     temp_habit_inst = 0;
-    temp_disp_inst = 0;
     
   }
                                         
 }                                      // ACTUA EN FUNCION DE LOS VALORES DE LA TEMPERATURA
 
  void check_calentador(){
-
+  #ifdef DEBUG
+  Serial.println("check calentador");
+  #endif
+  
     if (temp_agua > temp_agua_des + temp_margen || temp_agua< temp_agua_des - temp_margen)  {
       led8.on();
       alarma_activa =true;
-      
-
       } 
       else { 
         led8.off();
@@ -78,30 +80,12 @@ void check_temp(){
     
 }
 
- void getDHT()
-{
-  float h = dht.readHumidity();
-  float t = dht.readTemperature(); // or dht.readTemperature(true) for Fahrenheit
 
-  if (isnan(h) || isnan(t)) {
-    Serial.println("Failed to read from DHT sensor!");
-    return;
-  }
-  // You can send any value at any time.
-  // Please don't send more that 10 values per second.
- // Serial.print("  Hum ==> ");
- // Serial.print(humedad);
- // Serial.print("  Temp ==> ");
- // Serial.println(tempdht);
- humedad = h;
- tempdht = t;
-}
-
-
+void pHytds(){
 /////////////////////////////////////////////////////////////////
 // Sensor pH
 /////////////////////////////////////////////////////////////////
-void pHmeter (){
+//void pHmeter (){
   
   int buf[10];                //buffer for read analog
   for(int i=0;i<10;i++)       //Get 10 sample value from the sensor for smooth the value
@@ -126,12 +110,26 @@ void pHmeter (){
     avgValue+=buf[i];
   phValue=(float)avgValue*5.0/1024/6; //convert the analog into millivolt
   phValue=3.5*phValue+Offset;                      //convert the millivolt into pH value
-  Serial.print("    pH:");  
+  #ifdef DEBUG
+  Serial.print("pH: ");  
   Serial.print(phValue,2);
   Serial.println(" "); 
-}
+  #endif
+//}
 
 /////////////////////////////////////////////////////////////////
 // Sensor TDS
 /////////////////////////////////////////////////////////////////
 
+//void TDSmeter(){
+  
+    temperature = (sensors.getTempC(sensor_agua));  //add your temperature sensor and read it
+    gravityTds.setTemperature(temperature);  // set the temperature and execute temperature compensation
+    gravityTds.update();  //sample and calculate 
+    tdsValue = gravityTds.getTdsValue();  // then get the value
+    #ifdef DEBUG
+    Serial.print("ppm: ");
+    Serial.println(tdsValue,0);
+    #endif
+//}
+}

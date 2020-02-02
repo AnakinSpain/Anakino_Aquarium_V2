@@ -18,7 +18,7 @@ void draw(void) {
  u8g2.setFont(u8g_font_8x13);
  u8g2.drawStr( 5, 15, "Temp:"); // 
  u8g2.setCursor(48, 15);
- u8g2.print(tempdht); 
+ u8g2.print(temp_agua); 
  u8g2.drawStr( 93, 15, "C");
 
  u8g2.drawLine(0, 18, 127, 18); // linea separacion

@@ -3,13 +3,12 @@
 ////////////////////////////////////////////////////////////////
 void blynk(){
   Blynk.virtualWrite(V20, temp_agua); // envia la temp al widget agua
-  // Blynk.virtualWrite(V21, tempHB); // envia la temp al widget habitacion
-  Blynk.virtualWrite(V22, tempD); // envia la temp pantalla leds al widget 
+  Blynk.virtualWrite(V21, tempHB); // envia la temp al widget habitacion
   Blynk.virtualWrite(V23, percent_vent); // envia el tanto por ciento al que están los ventiladores
-//  Blynk.virtualWrite(V24, humedad);
-  Blynk.virtualWrite(V25, tempdht); // envia la temperatura del dht de la habitacion
-  Blynk.virtualWrite(V26, phValue,2); // envia la temperatura del dht de la habitacion
- // Serial.println("Envia datos a blynk.  " + String(hour()) + ":" + String(minute()) + ":" + String(second()));
+  Blynk.virtualWrite(V24, phValue,2); // envia valor de pH
+  #ifdef DEBUG
+  Serial.println("envia Blynk");
+  #endif
 }
 
 
@@ -20,7 +19,7 @@ void blynk(){
 void SendToThingspeak(void){
   
   // Serial.println("Envia datos a thingspeak.");    //Test thingspeak
-   Blynk.virtualWrite(V0, humedad, tempdht, temp_agua);
+   Blynk.virtualWrite(V0, tempHB, temp_agua);
 
 }
 
@@ -67,7 +66,7 @@ void reconnect()
 // FUNCION PARA sincronizar
 ////////////////////////////////////////////////
 
-
+/*
 void BlynkSyncAllHack() {  // Slow but stable SyncAll hack
   for (Vcount = 0; Vcount <= 127; Vcount++) {  // Count from 0 to 127
     Blynk.syncVirtual(Vcount);  // Generate a vPin sync for each count
@@ -75,3 +74,5 @@ void BlynkSyncAllHack() {  // Slow but stable SyncAll hack
     Blynk.run();  // Just keeps Blynk running
   }
 }
+
+*/

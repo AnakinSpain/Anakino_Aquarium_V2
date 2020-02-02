@@ -3,8 +3,9 @@
 // control funcionamiento del aireador
 /////////////////////////////////////////////////////////////////
 void check_ai(){
-
-      
+      #ifdef DEBUG
+      Serial.println("check Aireador");
+      #endif
       if (modo_ai == 1)     
       {       
         if (temp_ai == 1 )
@@ -41,8 +42,9 @@ void check_ai(){
 /////////////////////////////////////////////////////////////////
 
 void check_UV(){
-
-       
+      #ifdef DEBUG
+      Serial.println("check UV"); 
+      #endif
       if (modo_uv == 1){       // si esta configurado el modo automatico
         
        if (temp_uv == 1 )
@@ -94,7 +96,9 @@ void feeder() {  // call with timer every 14 seconds or so
   Serial.print("Feed Time: ");
   Serial.println(startTime);
 */
-
+#ifdef DEBUG
+Serial.println("check comedero");
+#endif
 if (feed_today == true)
 {
  if (hour() == SThour)
@@ -120,8 +124,9 @@ if (feed_today == true)
 
 
 void a_comer(){
-  
+  #ifdef DEBUG
   Serial.println("A comer!!");
+  #endif
   for(int posDegrees = 0; posDegrees <= 180; posDegrees++) {       
         servo1.write(posDegrees);      
       //  delay(200);
@@ -131,4 +136,3 @@ void a_comer(){
 /////////////////////////////////////////////////////////////////
 //
 /////////////////////////////////////////////////////////////////
-

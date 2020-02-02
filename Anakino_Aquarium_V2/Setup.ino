@@ -4,7 +4,7 @@
 void setup() {
   
   // Debug console
-  Serial.begin(9600);
+  Serial.begin(115200);
   delay(10); 
   
   // Set ESP8266 baud rate;
@@ -25,13 +25,17 @@ void setup() {
   //Blynk.begin(auth, ssid, pass, "blynk-cloud.com", 8442);
   
  
-    
-  timer.setInterval(120000L, SendToThingspeak);  // envia dato cada 2 minuto a thingspeak
-  timer.setInterval(30000L, blynk); //timer will run every 30 sec a blynk
-  timer.setInterval(14000L, feeder);  // Update feeder Check every 14 seconds
- // timer.setInterval(14000L, check_1); //timer will run every 35 sec
- // timer.setInterval(6000L, check_2); //timer will run every 6 sec 
-
+    #ifdef NOCONTADOR
+ // timer.setInterval(120000L, SendToThingspeak);  // envia dato cada 2 minuto a thingspeak
+ // timer.setInterval(5000L, pHytds); // lee ph y tds cada 5 minutos
+  timer.setInterval(5000L, blynk);               //envia datos a Blynk
+  timer.setInterval(15000L, feeder);             // Update feeder Check every 14 seconds
+  timer.setInterval(20000L, check_temp);        // Comprueba valores temperatura
+  timer.setInterval(25000L, check_ventilador);  // Comprueba si activa ventilador
+  timer.setInterval(30000L, check_calentador);  // Comprueba si activa el calentador
+  timer.setInterval(35000L, check_UV);          // Comprobamos horario para encender UV
+  timer.setInterval(40000L, check_ai);          // Comprobamos horario para encender AIREADOR
+  #endif
 
   
 //Asignamos los distintos PIN
@@ -47,11 +51,18 @@ void setup() {
   pinMode(aireador, OUTPUT);   // Aireador
   pinMode(lamp_uv, OUTPUT);    // Lampara UV
   pinMode(CO2, OUTPUT);        // Salida CO2      
+  pinMode(TdsSensorPin,INPUT);
+  pinMode(sensor_ph, INPUT);
   
   pinMode(led_rojo, OUTPUT);   // LED aviso rojo
   
   servo1.attach(servoPin);
 
+
+    gravityTds.setPin(TdsSensorPin);
+    gravityTds.setAref(5.0);  //reference voltage on ADC, default 5.0V on Arduino UNO
+    gravityTds.setAdcRange(1024);  //1024 for 10bit ADC;4096 for 12bit ADC
+    gravityTds.begin();  //initialization
 
 ////////////////////////////////////////
 ////////Con esto apagamos todos los reles. 
@@ -60,25 +71,27 @@ void setup() {
   digitalWrite(calentador,LOW);
   digitalWrite(aireador,LOW);
   digitalWrite(lamp_uv,LOW);
-  digitalWrite(luz,LOW);
+  digitalWrite(CO2,LOW);
  
   
 ////////////////////////////////////////
 // LLAMAMOS A LOS SENSORES DE LA TEMPERATURA
 ////////////////////////////////////////
 
-  dht.begin();  // inicia sensor dht
 
   sensors.begin();     //Inicia las lecturas de las sondas de temperatura.
-  if (!sensors.getAddress(sensor_agua, 0)) Serial.println("Falta el sensores de temperatura del agua");
-  if (!sensors.getAddress(sensor_disipador, 1)) Serial.println("Falta el sensores de temperatura de la tapa");
-  if (!sensors.getAddress(sensor_habitacion, 2)) Serial.println("Falta el sensores de temperatura de la habitacion");
+  if (!sensors.getAddress(sensor_agua, 0)) Serial.println("Falta el sensor de temperatura del agua");
+  if (!sensors.getAddress(sensor_habitacion, 1)) Serial.println("Falta el sensor de temperatura de la habitacion");
   
   
   sensors.setResolution(sensor_agua, 12); // Define la resolucion en 10 bits.
   sensors.setResolution(sensor_habitacion, 12); // Define la resolucion en 10 bits.
-  sensors.setResolution(sensor_disipador, 12); // Define la resolucion en 10 bits.
+  sensors.requestTemperatures();   // call sensors.requestTemperatures() to issue a global 
+  temp_agua = (sensors.getTempC(sensor_agua));        // lee temp del agua
+  tempHB = (sensors. getTempC(sensor_habitacion));// lee temp de la habitacion
 
+  
+  pHytds();
   
   Serial.println("Test the serial monitor!");    //Test the serial monitor
 
@@ -104,4 +117,3 @@ void SetRele( int Pin, boolean Estado )  //Funcion que hace que el rele chino fu
 ////////////////////////////////////////////////////////////////
 // FIN DEL SETUP
 ///////////////////////////////////////////////////////////////
-

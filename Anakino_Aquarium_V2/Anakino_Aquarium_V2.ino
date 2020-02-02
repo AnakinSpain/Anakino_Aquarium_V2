@@ -6,7 +6,8 @@
 //
 //     CONTROLADOR DE ACUARIO CON LA APP BLYNK 
 //     
-//     V1.0 
+//     V. 07-2019
+//
 //     PLACA Arduino Mega + wifi ESP8266
 //     
 //     TO DO: 1) Añadir opcion de luces auto, man on o man off y controladas por el arduino
@@ -15,40 +16,38 @@
 //
 /////// PUERTOS VIRTUALES BLYNK /////
 //                     
-//        V0       Datos de thingspeak       
-//        V1       Temperatura deseada del acuario desde blynk
-//        V2       Modo Airador
-//        V3       Modo lamp UV
-//        V4       Modo relleno
-//        V5       Modo Comedero
+//        V0       Datos de thingspeak webhook 500 puntos en app blynk
+//        V1       Temperatura deseada del acuario desde blynk numeric input 400
+//        V2       Modo Airador menu setting 400
+//        V3       Modo lamp UV menu setting 400
+//        V4       Modo relleno menu setting 400
+//        V5       Modo Comedero menu setting 400
 //        
-//        V10      LED bomba relleno funcionando
-//        V11      LED ventilador funcionando
-//        V12      LED calentador funcionando
-//        V13      LED funcionando lampara UV
-//        V14      LED esta funcionando el aireador
-//        V15      LED esta funcionando el CO2
-//        V16      LED deposito agua vacio
-//        V17      LED temperatura fuera parametros
+//        V10      LED bomba relleno funcionando 100
+//        V11      LED ventilador funcionando 100
+//        V12      LED calentador funcionando 100
+//        V13      LED funcionando lampara UV 100
+//        V14      LED esta funcionando el aireador 100
+//        V15      LED esta funcionando el CO2 100
+//        V16      LED deposito agua vacio 100
+//        V17      LED temperatura fuera parametros 100
 //
 //       
-//        V20      temp de agua
-//        V21      temp habitacion
-//        V22      temp pantalla
-//        V23      Tanto por ciento al que están los ventiladores
-//        V24      variable en el que irá la humedad
-//        V25      variable temperatura habitacion por el dht22
-//        V26      valor de pH
+//        V20      temp de agua display 200
+//        V21      temp habitacion display 200
+//        V22      libre
+//        V23      Tanto por ciento al que están los ventiladores display 200
+//        V24      valor de pH display 200
 //        
-//        V30      boton de comederos manual tipo push
-//        v31      Disparador de la peris 1
-//        V32      Disparador de la peris 2
+//        V30      boton de comederos manual tipo push 200
+//        v31      Disparador de la peris 1 time input 200
+//        V32      Disparador de la peris 2 time input 200
 //
 //
-//        V40      Disparador del temporizador del aireador (temporizadores)
-//        V41      Disparador del temporizador de la Lamp UV (temporizadores)
-//        V42      Temporizador CO2 libre
-//        V43 .    Temporizador comedero 
+//        V40      Disparador del temporizador del aireador (temporizadores) timer 200
+//        V41      Disparador del temporizador de la Lamp UV (temporizadores) timer 200
+//        V42      Temporizador CO2 libre timer 200
+//        V43 .    Temporizador comedero time input 200
 //       
 ///////////////////////////////////////////////////////////////
 
@@ -57,6 +56,8 @@
 ///////////////////////////////////////////////////////////////
 #define BLYNK_PRINT Serial
 
+
+#include <EEPROM.h>
 #include <ESP8266_Lib.h>
 #include <BlynkSimpleShieldEsp8266.h>
 #include <SPI.h>
@@ -66,9 +67,12 @@
 #include <Servo.h>
 #include <TimeLib.h>
 #include <WidgetRTC.h>
-#include <DHT.h>
 #include <U8g2lib.h>
-
+#include "GravityTDS.h"
+////////////////////////////////////////////////////////////////
+//#define NOCONTADOR
+#define CONTADOR
+#define DEBUG
 ////////////////////////////////////////////////////////////////
 // Definimos los pines y variables
 ////////////////////////////////////////////////////////////////
@@ -83,10 +87,10 @@
 #define nivel_dep  24   // Pin lee nivel agua deposito auxiliar
 #define bomba      25   // Pin accionara la bomba de llenado 
 
-#define calentador 26   // Calentador             
-#define aireador   27   // Aireador    
-#define lamp_uv    28   // Lampara UV
-#define CO2        29   // CO2
+#define calentador 26   // Calentador    * RELE 1         
+#define aireador   27   // Aireador      * RELE 2
+#define lamp_uv    28   // Lampara UV    * RELE 3
+#define CO2        29   // CO2           * RELE 4
 #define peris1     30   // peristaltica 1
 #define peris2     31   // peristáltica 2
 #define servoPin   36   // servo comedero
@@ -94,12 +98,15 @@
 
 #define led_rojo   53   // pin led de aviso rojo
 
-#define temp_margen  0.5    // Margen de actuacion del calentador
-
-#define DHTTYPE DHT22   // DHT 22  (AM2302)
+#define temp_margen  0.1    // Margen de actuacion del calentador
 
 #define sensor_ph  A15   // sensor de pH
 #define Offset 0.00            //deviation compensate of pH
+
+
+#define TdsSensorPin A14
+GravityTDS gravityTds;
+
 
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -110,8 +117,8 @@
    
   // Your WiFi credentials.
   // Set password to "" for open networks.
-  char ssid[] = "xxx";
-  char pass[] = "xxxx";
+  char ssid[] = "xxxx";
+  char pass[] = "xxxxxxxxx";
   
 // Hardware Serial on Mega, Leonardo, Micro...poner Serial3 para la placa robotdyn
 #define EspSerial Serial1
@@ -136,14 +143,12 @@ ESP8266 wifi(&EspSerial);
 //*********************** Variables de control de temperatura del agua ********************
 // Preparamos otras variable
 
- DHT dht(DHTPIN, DHTTYPE);
-
  float temp_agua;             //Temperatura del agua
  float temp_agua_des;         //temperatura agua deseada
  byte contador_temp = 0;
  byte contador_med_temp = 0;
  float temperatura_agua_temp; // Temperatura temporal del agua
- byte contador_global = 0;
+ int contador_1 = 0;
 
  float temp_agua_inst;
  float temp_habit_inst;
@@ -157,12 +162,13 @@ ESP8266 wifi(&EspSerial);
     
  float tempD = 0;     // Temperatura del disipador
  float tempHB = 0;    // Temperatura habitacion
- float humedad = 0;   // Variable humedad
- float tempdht = 0;   // temperatura del dht22
  byte  percent_vent;  // tanto porciento de los ventiladores para enfriar agua
 
  float phValue;      // valor de pH
  unsigned long int avgValue;     //Store the average value of the pH sensor feedback
+
+ float temperature; // variables para tds
+ float tdsValue; // variable para tds
 /////////////////////////////////////////////////
 // Preparamos  modos de funcionamiento
 
@@ -373,7 +379,7 @@ BLYNK_WRITE(V43) {  // Asignamos al TIME INPUT WIDGET 1 el comedero
 
 OneWire OneWireBus(sensores_temp);      //Sensores de temperatura conectados al pin 22.
 DallasTemperature sensors(&OneWireBus);
-DeviceAddress sensor_agua, sensor_habitacion, sensor_disipador;
+DeviceAddress sensor_agua, sensor_habitacion;
 //DeviceAddress sensor_agua= {0x28, 0x10, 0x32, 0x2B, 0x04, 0x00, 0x00, 0x38 }; // Es necesario cambiar este valor acorde con nuestro sensor.
 //DeviceAddress sensor_disipador = {0x28, 0x99, 0x47, 0x2B, 0x04, 0x00, 0x00, 0xFB }; // Es necesario cambiar este valor acorde con nuestro sensor.
 //DeviceAddress sensor_habitacion = {0x28, 0x6D, 0x70, 0x2B, 0x04, 0x00, 0x00, 0x80 }; // Es necesario cambiar este valor acorde con nuestro sensor.
@@ -411,4 +417,3 @@ int pHArray[ArrayLenth];   //Store the average value of the sensor feedback
 int pHArrayIndex=0;    
 static float pHValue;
 */
-

@@ -56,7 +56,6 @@
 ///////////////////////////////////////////////////////////////
 #define BLYNK_PRINT Serial
 
-
 #include <EEPROM.h>
 #include <ESP8266_Lib.h>
 #include <BlynkSimpleShieldEsp8266.h>
@@ -110,15 +109,14 @@ GravityTDS gravityTds;
 
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
-//CONFIGURACION WIFI
+//CONFIGURACION WIFI Y TOKEN
 ////////////////////////////////////////////////////////////////////////
 
-   char auth[] = "xxxxx";
-   
-  // Your WiFi credentials.
-  // Set password to "" for open networks.
-  char ssid[] = "xxxx";
-  char pass[] = "xxxxxxxxx";
+  char auth[] = "67HHqXry855zI-olo2oHrzAa60FaHYqN"; // INTRODUCIR TOKEN
+  char ssid[] = "atorcha";          // NOMBRE WIFI
+  char pass[] = "X55-mCx-DVL-kF4";  // CONTRASEÑA WIFI 
+
+////////////////////////////////////////////////////////////////
   
 // Hardware Serial on Mega, Leonardo, Micro...poner Serial3 para la placa robotdyn
 #define EspSerial Serial1

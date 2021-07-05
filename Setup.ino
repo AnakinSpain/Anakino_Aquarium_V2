@@ -17,9 +17,9 @@ void setup() {
 
    
   // Connect to Wi-Fi network with SSID and password
-   Blynk.begin(auth, wifi, ssid, pass);
+   Blynk.begin(auth, wifi, ssid, pass, "atorcha.asuscomm.com", 8080);
   // Blynk.begin(auth, wifi, ssid, pass, "192,168,1,12"); // acceso al servidor de la raspberry pi
-   Blynk.notify("Conectado!"); 
+   Blynk.logEvent("Conectado!"); 
    
   // You can also specify server:
   //Blynk.begin(auth, ssid, pass, "blynk-cloud.com", 8442);

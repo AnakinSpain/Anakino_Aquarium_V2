@@ -3,6 +3,7 @@
 // Controlamos las temperaturas para 
 // activar o desactivar calentador y ventiladores
 /////////////////////////////////////////////////////////////////
+
 void check_temp(){
   #ifdef DEBUG
   Serial.println("check temp");

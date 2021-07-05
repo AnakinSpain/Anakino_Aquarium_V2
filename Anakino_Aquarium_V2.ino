@@ -112,9 +112,9 @@ GravityTDS gravityTds;
 //CONFIGURACION WIFI Y TOKEN
 ////////////////////////////////////////////////////////////////////////
 
-  char auth[] = "67HHqXry855zI-olo2oHrzAa60FaHYqN"; // INTRODUCIR TOKEN
-  char ssid[] = "atorcha";          // NOMBRE WIFI
-  char pass[] = "X55-mCx-DVL-kF4";  // CONTRASEÑA WIFI 
+  char auth[] = "xxxxx"; // INTRODUCIR TOKEN
+  char ssid[] = "xxxxxx";          // NOMBRE WIFI
+  char pass[] = "xxxxxx";  // CONTRASEÑA WIFI 
 
 ////////////////////////////////////////////////////////////////
   
